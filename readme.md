@@ -4,8 +4,6 @@ This repository is intended to demonstrate how you use and build different githu
 
 ## TODO
 
-[ ] Github action build .NET applications
-
 [ ] Github action build and test .NET applications
 
 [ ] Github action for build test and deployment of .NET applications
