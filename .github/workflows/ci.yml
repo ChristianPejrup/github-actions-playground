@@ -9,6 +9,11 @@ on:
     branches: 
       - master
 
+env:
+  CONFIGURATION: Release
+  CODECOVERAGE_DIRECTORY: ./coverage-reports
+  CODECOVERAGE_REPORT: coverage.opencover.xml
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -25,22 +30,24 @@ jobs:
       run: dotnet restore
 
     - name: Build
-      run: dotnet build --configuration Release --no-restore
+      run: dotnet build --configuration ${{ env.CONFIGURATION }} --no-restore
 
     - name: Install Coverlet
       run: dotnet tool install --global coverlet.console
 
     - name: Test with coverage
-      run: coverlet ./tests/ --target "dotnet" --targetargs "test --no-build" --format opencover --output "./coverage-reports/"
+      run: |
+        coverlet ./tests/UnitTests/bin/${{ env.CONFIGURATION }}/net8.0/UnitTests.dll --target "dotnet" --targetargs "test --configuration ${{ env.CONFIGURATION }} ./tests/UnitTests --no-build" --format opencover --output "${{ env.CODECOVERAGE_DIRECTORY }}/${{ env.CODECOVERAGE_REPORT }}"
+      shell: pwsh
     
-    - name: Test with coverage
-      run: coverlet ./tests/UnitTests/bin/Release/netcoreapp3.1/UnitTests.dll --target "dotnet" --targetargs "test --no-build" --format opencover --output "./coverage-reports/"
+    - name: Install ReportGenerator
+      run: dotnet tool install --global dotnet-reportgenerator-globaltool
 
     - name: Generate report
-      run: dotnet reportgenerator "-reports:coverage.opencover.xml" "-targetdir:coveragereport" "-reporttypes:Html"
+      run: reportgenerator "-reports:${{ env.CODECOVERAGE_DIRECTORY }}/${{ env.CODECOVERAGE_REPORT }}" "-targetdir:${{ env.CODECOVERAGE_DIRECTORY }}" "-reporttypes:Html"
 
     - name: Publish report
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: code-coverage-report
-        path: coveragereport/
+        path: ${{ env.CODECOVERAGE_DIRECTORY }}
