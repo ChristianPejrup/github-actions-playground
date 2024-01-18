@@ -13,7 +13,6 @@ public class WeatherForecastServiceTests
     }
 
     [Theory]
-    [InlineData(0)]
     [InlineData(1)]
     [InlineData(7)]
     public void GetWeatherForecast_ValidForecastingPeriod_ReturnsMatchingForecast(int daysToForecast)
@@ -23,6 +22,15 @@ public class WeatherForecastServiceTests
 
         //Assert
         Assert.Equal(daysToForecast, actual.Length);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(8)]
+    public void GetWeatherForecast_ValidForecastingPeriod_ThrowsAnException(int daysToForecast)
+    {
+        //Act + Assert
+        Assert.Throws<CustomArgumentException>(() => _weatherForecastService.GenerateForecast(daysToForecast));
     }
 }
 

@@ -40,18 +40,24 @@ jobs:
         $testDlls = Get-ChildItem -Path "tests/**/bin/**/*tests.dll" -Recurse
         foreach ($dll in $testDlls) {
             $trimmedPath = $dll.FullName -replace '\\bin\\.*', ''
-            coverlet $dll.FullName --target "dotnet" --targetargs "test --configuration ${{ env.CONFIGURATION }} $trimmedPath --no-build" --format cobertura --output "${{ env.CODECOVERAGE_DIRECTORY }}/$(Split-Path $dll -Leaf).coverage.opencover.xml"
+            coverlet $dll.FullName --target "dotnet" --targetargs "test --configuration ${{ env.CONFIGURATION }} $trimmedPath --no-build" --format cobertura --output "${{ env.CODECOVERAGE_DIRECTORY }}/$(Split-Path $dll -Leaf).coverage.cobertura.xml"
         }
       shell: pwsh
 
-    - name: Install ReportGenerator
-      run: dotnet tool install --global dotnet-reportgenerator-globaltool
+    # - name: Install ReportGenerator
+    #   run: dotnet tool install --global dotnet-reportgenerator-globaltool
 
-    - name: Generate report
-      run: |
-        $coverageReports = (Get-ChildItem -Path "${{ env.CODECOVERAGE_DIRECTORY }}" -Filter "*.coverage.opencover.xml" -Recurse | ForEach-Object { $_.FullName }) -join ";"
-        reportgenerator "-reports:$coverageReports" "-targetdir:${{ env.CODECOVERAGE_DIRECTORY }}" "-reporttypes:Html;Cobertura"
-      shell: pwsh
+    # - name: Generate report
+    #   run: |
+    #     $coverageReports = (Get-ChildItem -Path "${{ env.CODECOVERAGE_DIRECTORY }}" -Filter "*.coverage.opencover.xml" -Recurse | ForEach-Object { $_.FullName }) -join ";"
+    #     reportgenerator "-reports:$coverageReports" "-targetdir:${{ env.CODECOVERAGE_DIRECTORY }}" "-reporttypes:Html;Cobertura"
+    #   shell: pwsh
+    - name: ReportGenerator
+      uses: danielpalme/ReportGenerator-GitHub-Action@5.2.0
+      with:
+        reports: '**/*.coverage.cobertura.xml'
+        targetdir: '${{ env.CODECOVERAGE_DIRECTORY }}'
+        reporttypes: 'HtmlInline;Cobertura'
 
     - name: Publish report
       uses: actions/upload-artifact@v4
