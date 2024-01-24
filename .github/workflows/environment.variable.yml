@@ -1,0 +1,5 @@
+name: variable_configuration
+
+env:
+  variable_1: "Hello"
+  variable_2: "world!"

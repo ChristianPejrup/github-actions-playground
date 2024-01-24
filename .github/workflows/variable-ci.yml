@@ -1,0 +1,9 @@
+name: Workflow 2
+on: push
+jobs:
+  job1:
+    runs-on: ubuntu-latest
+    needs: variable_configuration
+    steps:
+      - name: Step 1
+        run: echo ${{ env.variable_1 }} ${{ env.variable_2 }}
