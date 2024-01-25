@@ -1,4 +1,4 @@
-name: .NET Core CI
+name: my test ci workflow
 
 on:
   push:
@@ -9,71 +9,12 @@ on:
     branches: 
       - master
 
-env:
-  CONFIGURATION: Release
-  CODECOVERAGE_DIRECTORY: ./coverage-reports
-  CODECOVERAGE_REPORT: coverage.opencover.xml
-  CODECOVERAGE_REPORT_ARTIFACT: code-coverage-report
-
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  run:
+    uses: ./.github/workflows/ci-template.yml
+    with:
+      first_parameter: "Hello"
+      second_parameter: "World"
 
-    steps:
-    - uses: actions/checkout@v3
 
-    - name: Setup .NET Core
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: 8.0.x
 
-    - name: Install dependencies
-      run: dotnet restore
-
-    - name: Build
-      run: dotnet build --configuration ${{ env.CONFIGURATION }} --no-restore
-
-    - name: Install Coverlet
-      run: dotnet tool install --global coverlet.console
-    
-    # - name: Test with coverage
-    #   run: |
-    #     $testDlls = Get-ChildItem -Path "tests/**/bin/**/*tests.dll" -Recurse
-    #     foreach ($dll in $testDlls) {
-    #         $trimmedPath = $dll.FullName -replace '\\bin\\.*', ''
-    #         coverlet $dll.FullName --target "dotnet" --targetargs "test --configuration ${{ env.CONFIGURATION }} $trimmedPath --no-build" --format cobertura --output "${{ env.CODECOVERAGE_DIRECTORY }}/$(Split-Path $dll -Leaf).coverage.cobertura.xml"
-    #     }
-    #   shell: pwsh
-
-    - name: Test with Code Coverage
-      run: |
-        $testDlls = Get-ChildItem -Path "tests/**/bin/**/*tests.dll" -Recurse
-        foreach ($dll in $testDlls) {
-            $trimmedPath = $dll.FullName -replace '\\bin\\.*', ''
-            $testProjectName = $(Split-Path $dll -Leaf) -replace '\.dll$',''
-            coverlet $dll.FullName --target "dotnet" --targetargs "test --configuration ${{ env.CONFIGURATION }} $trimmedPath --no-build --logger trx;LogFileName=$testProjectName.trx --results-directory ${{ env.CODECOVERAGE_DIRECTORY }}" --format opencover --output "${{ env.CODECOVERAGE_DIRECTORY }}/$testProjectName.coverage.cobertura.xml"
-        }
-      shell: pwsh
-
-    - name: Publish Test Results
-      if: success() || failure() 
-      uses: dorny/test-reporter@v1
-      with:
-        name: Test Results
-        path: '*.trx'
-        working-directory: '${{ env.CODECOVERAGE_DIRECTORY }}'
-        reporter: dotnet-trx
-
-    - name: ReportGenerator
-      uses: danielpalme/ReportGenerator-GitHub-Action@5.2.0
-      with:
-        reports: '**/*.coverage.cobertura.xml'
-        targetdir: '${{ env.CODECOVERAGE_DIRECTORY }}'
-        reporttypes: 'HtmlInline;Cobertura'
-
-    - name: Publish report
-      uses: actions/upload-artifact@v4
-      with:
-        name: ${{ env.CODECOVERAGE_REPORT_ARTIFACT }}
-        path: ${{ env.CODECOVERAGE_DIRECTORY }}
-   

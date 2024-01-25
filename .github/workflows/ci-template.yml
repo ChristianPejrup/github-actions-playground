@@ -1,0 +1,27 @@
+name: workflow-template
+
+on: 
+  workflow_call:
+    inputs:
+      first_parameter:
+        type: string
+        required: true
+      second_parameter:
+        type: string
+        required: true
+
+jobs:      
+  output-text:
+    uses: ChristianPejrup/github-action-templates-playground/.github/workflows/template1.yml@master
+    secrets: inherit
+    with:
+      first_parameter: ${{ inputs.first_parameter }}
+      second_parameter: ${{ inputs.second_parameter }}
+  
+  output-text-reversed:
+    needs: output-text
+    uses: ChristianPejrup/github-action-templates-playground/.github/workflows/template2.yml@master
+    secrets: inherit
+    with:
+      first_parameter: ${{ inputs.first_parameter }}
+      second_parameter: ${{ inputs.second_parameter }}
