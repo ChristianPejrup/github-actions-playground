@@ -74,9 +74,6 @@ ScaffoldingReadMe.txt
 # StyleCop
 StyleCopReport.xml
 
-# CodeCoverage
-coverage-reports/
-
 # Files built by Visual Studio
 *_i.c
 *_p.c
