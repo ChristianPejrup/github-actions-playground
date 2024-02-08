@@ -12,23 +12,8 @@ on:
 
 jobs:
   output-text:
-    uses: ChristianPejrup/github-action-templates-playground/.github/workflows/template1and2.yml@master
+    uses: ChristianPejrup/github-action-templates-playground/.github/workflows/template1and2.yml@v0.4.0
     secrets: inherit
     with:
       first_parameter: ${{ inputs.first_parameter }}
       second_parameter: ${{ inputs.second_parameter }}
-        
-  # output-text:
-  #   uses: ChristianPejrup/github-action-templates-playground/.github/workflows/template1.yml@master
-  #   secrets: inherit
-  #   with:
-  #     first_parameter: ${{ inputs.first_parameter }}
-  #     second_parameter: ${{ inputs.second_parameter }}
-  
-  # output-text-reversed:
-  #   needs: output-text
-  #   uses: ChristianPejrup/github-action-templates-playground/.github/workflows/template2.yml@master
-  #   secrets: inherit
-  #   with:
-  #     first_parameter: ${{ inputs.first_parameter }}
-  #     second_parameter: ${{ inputs.second_parameter }}
