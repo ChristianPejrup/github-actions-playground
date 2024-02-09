@@ -11,11 +11,8 @@ on:
 
 jobs:
   output-text:
-    uses: ChristianPejrup/github-action-templates-playground/.github/workflows/template1and2.yml@v0.4.0
+    uses: ChristianPejrup/github-action-templates-playground/.github/workflows/template1and2.yml@v0.5
     secrets: inherit
     with:
       first_parameter: "Hello"
-      second_parameter: "World"
-
-
-
+      second_parameter: "World2"
