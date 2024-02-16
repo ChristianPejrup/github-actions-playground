@@ -33,7 +33,7 @@ public class WeatherForecastTests : IClassFixture<CustomWebApplicationFactory>
 
     [Theory]
     [InlineData(0)]
-    [InlineData(8)]
+    [InlineData(15)]
     public async Task GetWeatherForecast_ValidForecastingPeriod_ThrowsAnException(int daysToForecast)
     {
         // Arrange

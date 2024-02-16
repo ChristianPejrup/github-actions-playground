@@ -6,9 +6,9 @@ public class WeatherForecastService
 
     public WeatherForecast[] GenerateForecast(int daysToForecast)
     {
-        if(daysToForecast is < 1 or > 7)
+        if(daysToForecast is < 1 or > 14)
         {
-            throw new CustomArgumentException("Cannot forecast less than 1 day and more than 7 days");
+            throw new CustomArgumentException("Cannot forecast less than 1 day and more than 14 days");
         }
 
         var forecast = Enumerable.Range(1, daysToForecast).Select(index =>

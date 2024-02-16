@@ -12,7 +12,7 @@ on:
 env:
   CONFIGURATION: Release
   CODECOVERAGE_DIRECTORY: ./coverage-reports
-  CODECOVERAGE_REPORT: coverage.opencover.xml
+  CODECOVERAGE_REPORT_TEMPLATE: coverage.opencover.xml
   CODECOVERAGE_REPORT_ARTIFACT: code-coverage-report
   SONARCLOUD_PROJECT_KEY: 'ChristianPejrup_github-actions-playground'
   SONARCLOUD_ORGANIZATION: christianpejrup
@@ -23,6 +23,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
 
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v3
@@ -56,7 +58,12 @@ jobs:
       run: |
         # Conditionally run SonarCloud (start)
         if ('${{ github.event_name }}' -eq 'pull_request') {
-          dotnet sonarscanner begin /k:"${{ env.SONARCLOUD_PROJECT_KEY }}" /n:"${{ github.event.repository.name }}" /o:"${{ env.SONARCLOUD_ORGANIZATION }}" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.opencover.reportsPaths=${{ env.CODECOVERAGE_DIRECTORY }}/**/*.coverage.opencover.xml
+          foreach($testProject in Get-ChildItem -Path "tests/**/*.csproj" -Recurse) {
+            $testProjectName = $testProject.BaseName
+            $codeCoverageReportPaths += "${{ env.CODECOVERAGE_DIRECTORY }}/$testProjectName.${{ env.CODECOVERAGE_REPORT_TEMPLATE }},"
+          }
+
+          dotnet sonarscanner begin /k:"${{ env.SONARCLOUD_PROJECT_KEY }}" /n:"${{ github.event.repository.name }}" /o:"${{ env.SONARCLOUD_ORGANIZATION }}" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.opencover.reportsPaths=$codeCoverageReportPaths
         }
 
         dotnet build --configuration ${{ env.CONFIGURATION }} --no-restore
@@ -79,7 +86,7 @@ jobs:
       uses: dorny/test-reporter@v1
       with:
         name: Test Results
-        path: '*.trx'
+        path: '**/*.trx'
         working-directory: '${{ env.CODECOVERAGE_DIRECTORY }}'
         reporter: dotnet-trx
 

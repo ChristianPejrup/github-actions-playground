@@ -26,7 +26,7 @@ public class WeatherForecastServiceTests
 
     [Theory]
     [InlineData(0)]
-    [InlineData(8)]
+    [InlineData(15)]
     public void GetWeatherForecast_ValidForecastingPeriod_ThrowsAnException(int daysToForecast)
     {
         //Act + Assert
