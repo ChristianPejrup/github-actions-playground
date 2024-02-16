@@ -14,6 +14,8 @@ env:
   CODECOVERAGE_DIRECTORY: ./coverage-reports
   CODECOVERAGE_REPORT: coverage.opencover.xml
   CODECOVERAGE_REPORT_ARTIFACT: code-coverage-report
+  SONARCLOUD_PROJECT_KEY: 'ChristianPejrup_github-actions-playground'
+  SONARCLOUD_ORGANIZATION: christianpejrup
 
 jobs:
   build:
@@ -27,31 +29,48 @@ jobs:
       with:
         dotnet-version: 8.0.x
 
+    - name: Set up JDK (Sonarscanner dependency)
+      uses: actions/setup-java@v2
+      if: github.event_name == 'pull_request'
+      with:
+        distribution: 'zulu'
+        java-version: '17'
+
     - name: Install dependencies
       run: dotnet restore
 
-    - name: Build
-      run: dotnet build --configuration ${{ env.CONFIGURATION }} --no-restore
-
-    - name: Install Coverlet
-      run: dotnet tool install --global coverlet.console
-    
-    # - name: Test with coverage
-    #   run: |
-    #     $testDlls = Get-ChildItem -Path "tests/**/bin/**/*tests.dll" -Recurse
-    #     foreach ($dll in $testDlls) {
-    #         $trimmedPath = $dll.FullName -replace '\\bin\\.*', ''
-    #         coverlet $dll.FullName --target "dotnet" --targetargs "test --configuration ${{ env.CONFIGURATION }} $trimmedPath --no-build" --format cobertura --output "${{ env.CODECOVERAGE_DIRECTORY }}/$(Split-Path $dll -Leaf).coverage.cobertura.xml"
-    #     }
-    #   shell: pwsh
-
-    - name: Test with Code Coverage
+    - name: Install .NET Global tools
       run: |
+        dotnet tool install --global coverlet.console
+        dotnet tool install --global dotnet-sonarscanner
+
+    - name: SonarCloud - Cache packages
+      uses: actions/cache@v1
+      if: github.event_name == 'pull_request'
+      with:
+        path: ~\sonar\cache
+        key: ${{ runner.os }}-sonar
+        restore-keys: ${{ runner.os }}-sonar
+
+    - name: Build & Test with Code Coverage
+      run: |
+        # Conditionally run SonarCloud (start)
+        if ('${{ github.event_name }}' -eq 'pull_request') {
+          dotnet sonarscanner begin /k:"${{ env.SONARCLOUD_PROJECT_KEY }}" /n:"${{ github.event.repository.name }}" /o:"${{ env.SONARCLOUD_ORGANIZATION }}" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.opencover.reportsPaths=${{ env.CODECOVERAGE_DIRECTORY }}/**/*.coverage.opencover.xml
+        }
+
+        dotnet build --configuration ${{ env.CONFIGURATION }} --no-restore
+
         $testDlls = Get-ChildItem -Path "tests/**/bin/**/*tests.dll" -Recurse
         foreach ($dll in $testDlls) {
             $trimmedPath = $dll.FullName -replace '\\bin\\.*', ''
             $testProjectName = $(Split-Path $dll -Leaf) -replace '\.dll$',''
-            coverlet $dll.FullName --target "dotnet" --targetargs "test --configuration ${{ env.CONFIGURATION }} $trimmedPath --no-build --logger trx;LogFileName=$testProjectName.trx --results-directory ${{ env.CODECOVERAGE_DIRECTORY }}" --format opencover --output "${{ env.CODECOVERAGE_DIRECTORY }}/$testProjectName.coverage.cobertura.xml"
+            coverlet $dll.FullName --target "dotnet" --targetargs "test --configuration ${{ env.CONFIGURATION }} $trimmedPath --no-build --logger trx;LogFileName=$testProjectName.trx --results-directory ${{ env.CODECOVERAGE_DIRECTORY }}" --format opencover --output "${{ env.CODECOVERAGE_DIRECTORY }}/$testProjectName.coverage.opencover.xml"
+        }
+
+        # Conditionally run SonarCloud (end)
+        if ('${{ github.event_name }}' -eq 'pull_request') {
+          dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
         }
       shell: pwsh
 
@@ -67,7 +86,7 @@ jobs:
     - name: ReportGenerator
       uses: danielpalme/ReportGenerator-GitHub-Action@5.2.0
       with:
-        reports: '**/*.coverage.cobertura.xml'
+        reports: '**/*.coverage.opencover.xml'
         targetdir: '${{ env.CODECOVERAGE_DIRECTORY }}'
         reporttypes: 'HtmlInline;Cobertura'
 
