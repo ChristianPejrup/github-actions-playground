@@ -1,0 +1,42 @@
+repository:
+  name: github-action-playground
+  description: Repository for demonstrating how Github action can be used with a .NET project
+  topics: github, actions, github actions, code coverage
+  private: false
+  has_issues: true
+  has_projects: true
+  has_wiki: false
+  allow_rebase_merge: true
+  allow_squash_merge: false
+  allow_merge_commit: false
+  default_branch: master
+  enable_automated_security_fixes: true
+  enable_vulnerability_alerts: true
+
+branches:
+  - name: master
+    protection:
+      required_pull_request_reviews:
+        required_approving_review_count: 1
+      required_status_checks:
+        strict: true
+      enforce_admins: true
+      restrictions: null
+  - name: release/*
+    protection:
+      required_pull_request_reviews:
+        required_approving_review_count: 1
+      required_status_checks:
+        strict: true
+      enforce_admins: true
+      restrictions: null
+
+labels:
+  - name: bug
+    color: CC0000
+    description: An issue with the system 🐛
+  - name: feature
+    color: '#336699'
+    description: New functionality.
+  - name: Help Wanted
+    new_name: first-timers-only
