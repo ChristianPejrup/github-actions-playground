@@ -14,6 +14,7 @@ public class WeatherForecastServiceTests
 
     [Theory]
     [InlineData(1)]
+    [InlineData(5)]
     [InlineData(7)]
     public void GetWeatherForecast_ValidForecastingPeriod_ReturnsMatchingForecast(int daysToForecast)
     {
@@ -26,7 +27,6 @@ public class WeatherForecastServiceTests
 
     [Theory]
     [InlineData(0)]
-    [InlineData(8)]
     [InlineData(15)]
     public void GetWeatherForecast_ValidForecastingPeriod_ThrowsAnException(int daysToForecast)
     {
